@@ -10,7 +10,9 @@ This guide walks you through setting up your environment using Harness for CI/CD
 ## 📌 Pre-requisites
 
 Before you use this repository, make sure you have the following:
+
 🔐 Tokens & Credentials - You’ll need API tokens for:
+
 1. Harness
 Account Token: Get this from the URL after logging into Harness. HARNESS_ACCOUNT_ID
 API Toke: Click your profile icon (bottom left of the UI) → Access Management → API Keys → Generate Token. HARNESS_API_KEY
