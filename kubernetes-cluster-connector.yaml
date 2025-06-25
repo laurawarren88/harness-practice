@@ -1,0 +1,13 @@
+connector:
+  name: my-rancher-connector
+  identifier: myRancherConnectorId
+  description: "Harness Connector for my Rancher instance"
+  orgIdentifier: default
+  projectIdentifier: default_project 
+  type: Rancher
+  spec:
+    rancherUrl: "https://rancher.easlab.co.uk/" 
+    authentication:
+      type: BearerToken
+      spec:
+        bearerTokenRef: rancherBearerTokenSecret 
