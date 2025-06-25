@@ -3,10 +3,10 @@ connector:
   identifier: githubconnector
   description: ""
   orgIdentifier: default
-  projectIdentifier: default_project
+  projectIdentifier: infra-task
   type: Github
   spec:
-    url: https://github.com/GITHUB_USERNAME/harness-gitops-workshop
+    url: https://github.com/GITHUB_USERNAME/frontend-react-fitness-locator
     authentication:
       type: Http
       spec:

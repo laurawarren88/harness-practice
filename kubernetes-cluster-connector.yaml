@@ -1,13 +1,14 @@
 connector:
-  name: my-rancher-connector
-  identifier: myRancherConnectorId
-  description: "Harness Connector for my Rancher instance"
+  name: practiceBuildCluster
+  identifier: practiceBuildCluster
+  description: ""
+  accountIdentifier: e61FzLfSTZCwdxWyVgwypA
   orgIdentifier: default
-  projectIdentifier: default_project 
-  type: Rancher
+  projectIdentifier: infra-task
+  type: K8sCluster
   spec:
-    rancherUrl: "https://rancher.easlab.co.uk/" 
-    authentication:
-      type: BearerToken
-      spec:
-        bearerTokenRef: rancherBearerTokenSecret 
+    credential:
+      type: InheritFromDelegate
+    delegateSelectors:
+      - lmw-kubernetes-delegate
+    ignoreTestConnection: false

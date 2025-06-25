@@ -1,7 +1,7 @@
 pipeline:
   name: cicd-gitops-pipeline
   identifier: cicdgitopspipeline
-  projectIdentifier: default_project
+  projectIdentifier: infra-task
   orgIdentifier: default
   tags: {}
   properties:
@@ -57,7 +57,7 @@ pipeline:
       type: String
       description: ""
       required: false
-      value: lmwcode/harness-gitops-workshop
+      value: lmwcode/frontend-react-fitness-locator
     - name: imageTag
       type: String
       description: ""
