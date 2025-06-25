@@ -65,6 +65,8 @@ harness secret apply --token <GITHUB_PAT> --secret-name "github_pat"
 harness secret apply --token <DOCKER_PAT> --secret-name "docker_pat"
 ```
 
+The above secrets will be added to your default_project and default_org. If you wish to add them to different projects or orgs, you can use the --project and --org flags.
+
 ## 🔗 Add Connectors (GitHub & Docker)
 
 Update the connector YAML files to match your GitHub and Docker details.
@@ -77,7 +79,7 @@ docker-connector.yaml
 GitHub Connector (change repo/username as needed) and apply:
 
 ```bash
-harness connector -f harness/github-connector.yaml apply
+harness connector --file github-connector.yaml apply
 ```
 
 > [!NOTE]
@@ -87,11 +89,21 @@ harness connector -f harness/github-connector.yaml apply
 Docker Hub Connector (change image/username as needed) and apply:
 
 ```bash
-harness connector -f harness/docker-connector.yaml apply
+harness connector --file docker-connector.yaml apply
 ```
 
 You will be prompted for your Docker username.
 Example: lmwcode
+
+## Set up a Harness Delegate
+
+Open the harness-delegate.yaml file.
+Update the delegateName  namespace, resources and limits fields if required.
+Apply the file:
+
+```bash
+kubectl apply -f harness-delegate.yaml
+```
 
 ## ☸️ Add Kubernetes Cluster Connector
 
@@ -100,7 +112,7 @@ Update the delegateName field if required.
 Apply the file:
 
 ```bash
-harness connector -f harness/kubernetes-cluster-connector.yaml apply
+harness connector --file kubernetes-cluster-connector.yaml apply
 ```
 
 ## 🏗️ Set Up Your CI Pipeline
@@ -110,7 +122,7 @@ Change the repository reference at the end to point to your desired repo.
 Apply the pipeline:
 
 ```bash
-harness pipeline -f harness/cipipeline.yaml apply
+harness pipeline -f cipipeline.yaml apply
 ```
 
 ## 🚀 Run the Pipeline from Harness UI

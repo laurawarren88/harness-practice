@@ -1,7 +1,7 @@
 pipeline:
   name: cicd-gitops-pipeline
   identifier: cicdgitopspipeline
-  projectIdentifier: infra-task
+  projectIdentifier: infratask
   orgIdentifier: default
   tags: {}
   properties:

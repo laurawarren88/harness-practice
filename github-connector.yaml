@@ -3,7 +3,7 @@ connector:
   identifier: githubconnector
   description: ""
   orgIdentifier: default
-  projectIdentifier: infra-task
+  projectIdentifier: infratask
   type: Github
   spec:
     url: https://github.com/GITHUB_USERNAME/frontend-react-fitness-locator

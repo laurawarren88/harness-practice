@@ -4,7 +4,7 @@ connector:
   description: ""
   accountIdentifier: e61FzLfSTZCwdxWyVgwypA
   orgIdentifier: default
-  projectIdentifier: infra-task
+  projectIdentifier: infratask
   type: K8sCluster
   spec:
     credential:

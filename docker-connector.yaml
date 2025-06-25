@@ -3,7 +3,7 @@ connector:
   identifier: docker_connector
   description: ""
   orgIdentifier: default
-  projectIdentifier: infra-task
+  projectIdentifier: infratask
   type: DockerRegistry
   spec:
     dockerRegistryUrl: https://index.docker.io/v2/
