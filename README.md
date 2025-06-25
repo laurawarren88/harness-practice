@@ -25,7 +25,7 @@ Navigate to your profile → Account Settings → Security → Create a Personal
 
 ## 🧰 Install the Harness CLI
 
-Run the following in your terminal (macOS example):
+Ensure you have Harness CLI installed. If not in your terminal navigate to where you install packages and run the following in your terminal (macOS example):
 
 ```bash
 curl -LO https://github.com/harness/harness-cli/releases/download/v0.0.25-Preview/harness-v0.0.25-Preview-darwin-amd64.tar.gz
@@ -33,8 +33,20 @@ tar -xvf harness-v0.0.25-Preview-darwin-amd64.tar.gz
 export PATH="$(pwd):$PATH"
 echo 'export PATH="'$(pwd)':$PATH"' >> ~/.zshrc
 source ~/.zshrc
+```
+
+> [!NOTE]
+> Change .zshrc to .bashrc if you're using a different shell.
+
+Then run harness update for the newest version and check installed correctly.
+
+```bash
+harness update
 harness --version
 ```
+
+> [!NOTE]
+> You will be prompted [y/N]
 
 ## 🔑 Authenticate with Harness
 
