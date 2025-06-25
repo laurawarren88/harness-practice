@@ -1,0 +1,160 @@
+pipeline:
+  name: cicd-gitops-pipeline
+  identifier: cicdgitopspipeline
+  projectIdentifier: infratask
+  orgIdentifier: default
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: githubconnector
+        build: <+input>
+  stages:
+  # Stage 1: Build Docker Image
+  - stage:
+      name: Build Image
+      identifier: BuildImage
+      description: "Builds the Docker image without pushing to registry."
+      type: CI
+      spec:
+        cloneCodebase: true
+        platform:
+          os: Linux
+          arch: Amd64
+        runtime:
+          type: Docker
+          spec:
+            connectorRef: practiceBuildCluster
+            namespace: lmw-harness
+        execution:
+          steps:
+          - step:
+              type: BuildAndPushDockerRegistry
+              name: Docker Build
+              identifier: DockerBuild
+              spec:
+                connectorRef: docker_connector
+                repo: <+pipeline.variables.imageRepo>
+                tags:
+                - <+pipeline.variables.imageTag>
+                dockerfile: Dockerfile
+                context: .
+                dryRun: true
+                resources:
+                  limits:
+                    cpu: "1"
+                    memory: "2Gi"
+                  requests:
+                    cpu: "0.5"
+                    memory: "1Gi"
+        caching:
+          enabled: false
+
+  # Stage 2: Scan Image for Vulnerabilities 
+  - stage:
+      name: Scan Image
+      identifier: ScanImage
+      description: "Scans the built Docker image for vulnerabilities using Trivy."
+      type: CI
+      spec:
+        cloneCodebase: false
+        platform:
+          os: Linux
+          arch: Amd64
+        runtime:
+          type: Docker
+          spec:
+            connectorRef: practiceBuildCluster
+            namespace: lmw-harness
+        execution:
+          steps:
+          - step:
+              type: Run
+              name: Trivy Scan
+              identifier: TrivyScan
+              spec:
+                shell: Sh
+                image: ubuntu:22.04
+                command: |
+                  apt-get update && apt-get install -y wget unzip
+                  wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.tar.gz
+                  tar zxvf trivy_0.50.1_Linux-64bit.tar.gz
+                  mv trivy /usr/local/bin/
+                  # Ensure the image built in the previous stage is accessible
+                  # Note: Harness CI typically mounts the workspace, so if DockerBuild built it,
+                  # this stage should be able to see it in its Docker daemon.
+                  trivy image --exit-code 1 --severity CRITICAL,HIGH \
+                      <+pipeline.variables.imageRepo>:<+pipeline.variables.imageTag>
+                resources:
+                  limits:
+                    memory: "1Gi"
+                    cpu: "500m"
+                  requests:
+                    memory: "512Mi"
+                    cpu: "250m"
+        failureStrategies:
+        - onFailure:
+            errors:
+            - AllErrors
+            action:
+              type: Abort
+        when:
+          condition: <+pipeline.stages.BuildImage.status> == "SUCCESS"
+
+  # Stage 3: Push Docker Image to Registry
+  - stage:
+      name: Push Image
+      identifier: PushImage
+      description: "Pushes the validated Docker image to the registry."
+      type: CI
+      spec:
+        cloneCodebase: false
+        platform:
+          os: Linux
+          arch: Amd64
+        runtime:
+          type: Docker
+          spec:
+            connectorRef: practiceBuildCluster
+            namespace: lmw-harness
+        execution:
+          steps:
+          - step:
+              type: BuildAndPushDockerRegistry
+              name: Docker Push
+              identifier: DockerPush
+              spec:
+                connectorRef: docker_connector
+                repo: <+pipeline.variables.imageRepo>
+                tags:
+                - <+pipeline.variables.imageTag>
+                dockerfile: Dockerfile
+                context: .
+                dryRun: false
+                resources:
+                  limits:
+                    cpu: "1"
+                    memory: "2Gi"
+                  requests:
+                    cpu: "0.5"
+                    memory: "1Gi"
+        failureStrategies:
+        - onFailure:
+            errors:
+            - AllErrors
+            action:
+              type: Abort
+        when:
+          condition: <+pipeline.stages.ScanImage.status> == "SUCCESS"
+
+  variables:
+  - name: imageRepo
+    type: String
+    description: ""
+    required: false
+    value: lmwcode/frontend-react-fitness-locator
+  - name: imageTag
+    type: String
+    description: ""
+    required: false
+    value: latest

@@ -79,7 +79,7 @@ docker-connector.yaml
 GitHub Connector (change repo/username as needed) and apply:
 
 ```bash
-harness connector --file github-connector.yaml apply
+harness connector --file connectors/github-connector.yaml apply
 ```
 
 > [!NOTE]
@@ -89,7 +89,7 @@ harness connector --file github-connector.yaml apply
 Docker Hub Connector (change image/username as needed) and apply:
 
 ```bash
-harness connector --file docker-connector.yaml apply
+harness connector --file connectors/docker-connector.yaml apply
 ```
 
 You will be prompted for your Docker username.
@@ -102,7 +102,7 @@ Update the delegateName  namespace, resources and limits fields if required.
 Apply the file:
 
 ```bash
-kubectl apply -f harness-delegate.yaml
+kubectl apply -f delegate/harness-delegate.yaml
 ```
 
 ## ☸️ Add Kubernetes Cluster Connector
@@ -112,8 +112,11 @@ Update the delegateName field if required.
 Apply the file:
 
 ```bash
-harness connector --file kubernetes-cluster-connector.yaml apply
+harness connector --file connectors/kubernetes-cluster-connector.yaml apply
 ```
+
+> [!NOTE]
+> You will be prompted for your harness delegate name.
 
 ## 🏗️ Set Up Your CI Pipeline
 
@@ -122,7 +125,7 @@ Change the repository reference at the end to point to your desired repo.
 Apply the pipeline:
 
 ```bash
-harness pipeline -f cipipeline.yaml apply
+harness pipeline -f pipeline/cipipeline.yaml apply
 ```
 
 ## 🚀 Run the Pipeline from Harness UI
