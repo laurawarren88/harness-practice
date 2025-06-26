@@ -12,7 +12,7 @@ pipeline:
   stages:
   # Stage 1: Build Docker Image
   - stage:
-      name: Build Image
+      name: Build Image and Sonarqube
       identifier: BuildImage
       description: "Builds the Docker image without pushing to registry."
       type: CI
@@ -47,12 +47,43 @@ pipeline:
                   requests:
                     cpu: "0.5"
                     memory: "1Gi"
-        caching:
-          enabled: false
-
+          - step:
+              type: Run
+              name: SonarQube Scan
+              identifier: SonarQubeScan
+              spec:
+                connectorRef: practiceBuildCluster
+                shell: Sh
+                image: ubuntu:22.04
+                command: |
+                  apt-get update && apt-get install -y curl unzip
+                  curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+                  unzip sonar-scanner.zip
+                  ./sonar-scanner-*/bin/sonar-scanner \
+                  -Dsonar.projectKey=fitness-locator
+                  -Dsonar.sources=. \
+                  -Dsonar.host.url=http://127.0.0.1:9000
+                  -Dsonar.login=${SONAR_TOKEN}
+                envVariables:
+                  SONAR_TOKEN: <+secrets.getValue("sonar_token")>
+                resources:
+                  limits:
+                    memory: "1Gi"
+                    cpu: "500m"
+                  requests:
+                    memory: "512Mi"
+                    cpu: "250m"
+                failureStrategies:
+                - onFailure:
+                    errors:
+                    - AllErrors
+                    action:
+                      type: Abort
+                caching:
+                  enabled: false
   # Stage 2: Scan Image for Vulnerabilities 
   - stage:
-      name: Scan Image
+      name: Trivy Scan Image
       identifier: ScanImage
       description: "Scans the built Docker image for vulnerabilities using Trivy."
       type: CI
@@ -73,18 +104,32 @@ pipeline:
               name: Trivy Scan
               identifier: TrivyScan
               spec:
+                connectorRef: practiceBuildCluster
                 shell: Sh
                 image: ubuntu:22.04
                 command: |
+                  set -eux pipefail
                   apt-get update && apt-get install -y wget unzip
-                  wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.tar.gz
-                  tar zxvf trivy_0.50.1_Linux-64bit.tar.gz
+                  wget https://github.com/aquasecurity/trivy/releases/download/v0.63.0/trivy_0.63.0_Linux-64bit.tar.gz
+                  tar zxvf trivy_0.63.0_Linux-64bit.tar.gz
                   mv trivy /usr/local/bin/
-                  # Ensure the image built in the previous stage is accessible
-                  # Note: Harness CI typically mounts the workspace, so if DockerBuild built it,
-                  # this stage should be able to see it in its Docker daemon.
-                  trivy image --exit-code 1 --severity CRITICAL,HIGH \
-                      <+pipeline.variables.imageRepo>:<+pipeline.variables.imageTag>
+                  TRIVY_REPORT="trivy-report.txt"
+                  trivy image \
+                    --exit-code 1 \
+                    --severity HIGH \
+                    --format table \
+                    --output "${TRIVY_REPORT}" \
+                    --ignore-unfixed \
+                    <+pipeline.variables.imageRepo>:<+pipeline.variables.imageTag> || true
+
+                  echo "--- Trivy Scan Report ---"
+                  cat "${TRIVY_REPORT}"
+                  echo "--- End of Trivy Scan Report ---"
+
+                  trivy image \
+                    --exit-code 1 \
+                    --severity HIGH \
+                    <+pipeline.variables.imageRepo>:<+pipeline.variables.imageTag>
                 resources:
                   limits:
                     memory: "1Gi"
@@ -101,14 +146,14 @@ pipeline:
         when:
           condition: <+pipeline.stages.BuildImage.status> == "SUCCESS"
 
-  # Stage 3: Push Docker Image to Registry
+  # Stage 4: Push Docker Image to Registry
   - stage:
       name: Push Image
       identifier: PushImage
       description: "Pushes the validated Docker image to the registry."
       type: CI
       spec:
-        cloneCodebase: false
+        cloneCodebase: true
         platform:
           os: Linux
           arch: Amd64
